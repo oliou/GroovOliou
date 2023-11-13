@@ -9,7 +9,9 @@
  */
 
 
-#include "../JuceLibraryCode/JuceHeader.h"
+//#include "../JuceLibraryCode/JuceHeader.h"
+
+#include <JuceHeader.h>
 
 #include <vector>
 #include <string>
@@ -18,6 +20,9 @@
 #include <stdlib.h>
 #include <fstream>
 
+#include "date.h"
 
-void debugLog(String debugTxt);
-void debugLog(String debugTxt, bool separator );
+
+
+void debugLog(juce::String debugTxt);
+void debugLog(juce::String debugTxt, bool separator );

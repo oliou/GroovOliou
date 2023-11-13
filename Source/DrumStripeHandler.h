@@ -12,33 +12,36 @@
 #include <stdio.h>
 #include <map>
 //#include "PluginEditor.h"
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
+#include <string>
+#include "DrumStripeHandler.h"
 
-#include "DrumStripeProcessor.h"
-#include "CustomSamplerVoice.h"
+
+//#include "DrumStripeProcessor.h"
+//#include "DrumSampler.h"
 #include "utils.h"
 
 
-class DrumStripeProcessor;
-class JuceDemoPluginAudioProcessorEditor;
-class JuceDemoPluginAudioProcessor;
+//class DrumStripeProcessor;
+class GroovOliouAudioProcessorEditor;
+class GroovOliouAudioProcessor;
 
 //==============================================================================
 /** This is the editor component that our filter will display.
  */
-class DrumStripeHandler:  public ButtonListener, //class DrumStripeHandler :public AudioProcessorEditor,
-                        public SliderListener,
-                        public Timer,
-                        public ChangeListener,
-                        public MouseListener,
-                        public ComboBoxListener,
-                        public KeyListener
+class DrumStripeHandler:  public juce::Button::Listener, //class DrumStripeHandler :public AudioProcessorEditor,
+                        public juce::Slider::Listener,
+                        public juce::Timer,
+                        public juce::ChangeListener,
+                        public juce::MouseListener,
+                        public juce::ComboBox::Listener,
+                        public juce::KeyListener
 {
 public:
     //DrumStripeHandler(DrumStripeProcessor&);
-    DrumStripeHandler(JuceDemoPluginAudioProcessor* ,
+    DrumStripeHandler(GroovOliouAudioProcessor* ,
                      //DirectoryContentsList* ,
-                     String ,
+                     juce::String ,
                      int,
                       int );
     
@@ -47,23 +50,23 @@ public:
     //==============================================================================
     void timerCallback() override;
     
-    void setEditor(JuceDemoPluginAudioProcessorEditor* );
+    void setEditor(GroovOliouAudioProcessorEditor* );
     void setGUIComponents( /* JuceDemoPluginAudioProcessorEditor* */ );
-    void initializeSlider(/*JuceDemoPluginAudioProcessorEditor* editor,*/ Slider*, Label*, int, int, float, float);
+    void initializeSlider(/*JuceDemoPluginAudioProcessorEditor* editor,*/ juce::Slider*, juce::Label*, int, int, float, float);
     
     
-    void buttonClicked (Button* )  override;
+    void buttonClicked (juce::Button* )  override;
     
 //    void buttonStateChanged(Button *) override;
     
     void updateDirectoryContentList();
-    void changeListenerCallback(ChangeBroadcaster * ) override;
-    void mouseDoubleClick (const MouseEvent& event ) override;
-    void mouseDown (const MouseEvent& event ) override;
-    void mouseEnter(const MouseEvent& event) override;
-    void mouseExit(const MouseEvent& event) override;
+    void changeListenerCallback(juce::ChangeBroadcaster * ) override;
+    void mouseDoubleClick (const juce::MouseEvent& event ) override;
+    void mouseDown (const juce::MouseEvent& event ) override;
+    void mouseEnter(const juce::MouseEvent& event) override;
+    void mouseExit(const juce::MouseEvent& event) override;
     
-    void comboBoxChanged(ComboBox*) override;
+    void comboBoxChanged(juce::ComboBox*) override;
     
     void setSound(double);
     void loadNextSound();
@@ -73,8 +76,8 @@ public:
     
     void handleControlChange(int controllerNumber, int controllerValue );
     
-    bool keyPressed( const KeyPress &  key,  Component * originatingComponent ) override;
-    bool keyStateChanged( bool  isKeyDown,  Component * originatingComponent ) override;
+    bool keyPressed( const juce::KeyPress &  key,  juce::Component * originatingComponent ) override;
+    bool keyStateChanged( bool  isKeyDown,  juce::Component * originatingComponent ) override;
     
     void flashPlayButton(bool forceFlash = false);
     
@@ -92,7 +95,7 @@ public:
   //  void timerCallback() override;
 //    void paint (Graphics&) override;
  //   void resized() override;
-    void sliderValueChanged (Slider*) override;
+    void sliderValueChanged (juce::Slider*) override;
 //    void sliderDragStarted  (Slider*) override;
 //    void sliderDragEnded    (Slider*) override;
     
@@ -109,23 +112,23 @@ public:
     
     
     int outputSelected = 1;
-    ComboBox outputDropDown;
+    juce::ComboBox outputDropDown;
     
     int soundIndex = 0;
     int forcedSoundIndex = 0;
     int playMode = 1; //0=noteOnOff 1=oneshoot
     bool reverse = false;
     
-    const String playButtonName="playButton";
-    const String playButtonHelpMesg="Assigne Note: Ctrl-click then keyboard note.";
+    const juce::String playButtonName="playButton";
+    const juce::String playButtonHelpMesg="Assigne Note: Ctrl-click then keyboard note.";
     
-    const String sliderHelpMesg="Assign Controller: Ctrl-click then move controller. Double click to reset value.";
+    const juce::String sliderHelpMesg="Assign Controller: Ctrl-click then move controller. Double click to reset value.";
 
-    const String volumeName="Gain";
-    const String balanceName="Balance";
-    const String pitchName="Pitch";
-    const String attackName="Attack";
-    const String decayName="Decay";
+    const juce::String volumeName="Gain";
+    const juce::String balanceName="Balance";
+    const juce::String pitchName="Pitch";
+    const juce::String attackName="Attack";
+    const juce::String decayName="Decay";
     
     const int volumeDefValue=1;
     const int balanceDefValue=0;
@@ -139,9 +142,9 @@ public:
     float attack = attackDefValue;
     float decay = decayDefValue;
     
-    String samplesPath ;
+    juce::String samplesPath ;
     
-    Label   sampleLabel,
+    juce::Label   sampleLabel,
             attackLabel,
             decayLabel,
             pitchLabel,
@@ -150,30 +153,30 @@ public:
             outputLabel,
             noteLabel;
     
-    Slider  attackSlider,
+    juce::Slider  attackSlider,
             decaySlider,
             pitchSlider,
             volumeSlider,
             balanceSlider;
     
-    TextButton selectFileButton;
-    TextButton selectFileFolderButton;
-    TextButton  playButton;
-    TextButton nextSoundButton;
-    TextButton prevSoundButton;
-    ToggleButton playModeButton;
-    ToggleButton reverseButton;
+    juce::TextButton selectFileButton;
+    juce::TextButton selectFileFolderButton;
+    juce::TextButton  playButton;
+    juce::TextButton nextSoundButton;
+    juce::TextButton prevSoundButton;
+    juce::ToggleButton playModeButton;
+    juce::ToggleButton reverseButton;
     
-    TimeSliceThread thread;
-    DirectoryContentsList directoryContentsList;
+    juce::TimeSliceThread thread;
+    juce::DirectoryContentsList directoryContentsList;
 
-    ListBoxModel *listBoxModel;
+    juce::ListBoxModel *listBoxModel;
     
-    AudioFormatManager formatManager;
+    juce::AudioFormatManager formatManager;
     
-    SamplerSound::Ptr soundObj;
+    juce::SamplerSound::Ptr soundObj;
     
-    String selectionStr;
+    juce::String selectionStr;
     
     bool hasThatSound();
     
@@ -181,11 +184,11 @@ public:
     
     void refreshView();
     
-    JuceDemoPluginAudioProcessorEditor *mainEditor;
-    JuceDemoPluginAudioProcessor *processor;
+    GroovOliouAudioProcessorEditor *mainEditor;
+    GroovOliouAudioProcessor *processor;
     
-    void setLabel(String,bool);
-    String getLabel();
+    void setLabel(juce::String,bool);
+    juce::String getLabel();
         
     //DrumStripeHandler* getParameterFromSlider (const Slider*) const;
     

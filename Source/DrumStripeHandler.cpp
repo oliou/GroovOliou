@@ -6,14 +6,20 @@
 //
 //
 
+#include <JuceHeader.h>
+
 #include "DrumStripeHandler.h"
 #include "PluginEditor.h"
+#include <string>
+#include "utils.h"
+
+#include "DrumSampler.h"
 
 
-DrumStripeHandler::DrumStripeHandler(JuceDemoPluginAudioProcessor* processor,
+DrumStripeHandler::DrumStripeHandler(GroovOliouAudioProcessor* processor,
                                    //JuceDemoPluginAudioProcessorEditor* editor,
                                    //DirectoryContentsList* directoryContentsList,
-                                   String sPath,
+                                   juce::String sPath,
                                    int position,
                                    int note):
     // AudioProcessorEditor (owner),
@@ -24,7 +30,7 @@ DrumStripeHandler::DrumStripeHandler(JuceDemoPluginAudioProcessor* processor,
     position(position),
     note(note),
     //directoryContentsList(directoryContentsList),
-    samplesPath(sPath+(String)(position)+'/'),
+    samplesPath(sPath + std::to_string(position) + '/'),
     selectionStr(""),
     sampleLabel("", "sample"),
     attackLabel("", attackName),
@@ -39,16 +45,16 @@ DrumStripeHandler::DrumStripeHandler(JuceDemoPluginAudioProcessor* processor,
     volumeSlider(volumeName),
     outputDropDown("Output Pair"),
     outputLabel("","Output:"),
-    noteLabel("","Note: "+(String)note),
+    noteLabel("","Note: " + std::to_string(note)),
     selectFileButton("(Click here to select a sample)"),
     selectFileFolderButton("Change Folder"),
-    playButton((String)(position)),
-    nextSoundButton(">"),
-    prevSoundButton("<"),
+    playButton(std::to_string(position)),
+    nextSoundButton(" > "),
+    prevSoundButton(" < "),
     playModeButton("PlayMode"),
     reverseButton("Reverse")
 {
-    debugLog((String) __FUNCTION__ + (String) position, true );
+    debugLog( __PRETTY_FUNCTION__ + (juce::String) position, true );
     
     directoryContentsList.addChangeListener(this);
     DrumStripeHandler::updateDirectoryContentList();
@@ -63,9 +69,9 @@ DrumStripeHandler::DrumStripeHandler(JuceDemoPluginAudioProcessor* processor,
     outputDropDown.addItem ("13,14", 13);
     outputDropDown.addItem ("15,16", 15);
     outputDropDown.setSelectedId(outputSelected);
-    debugLog((juce::String)  "outputSelected:" + (juce::String) outputSelected);
+//    debugLog( "outputSelected:" + std::to_string(outputSelected));
     
-    playButton.setColour(TextButton::buttonColourId, Colours::blanchedalmond);
+    playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::blanchedalmond);
     
     
 //    playButton.setState(TextButton::buttonDown);
@@ -92,22 +98,29 @@ DrumStripeHandler::~DrumStripeHandler(){};
 
 
 void DrumStripeHandler::setSound(double newIndex){
-    debugLog((String) __FUNCTION__, true );
+    debugLog( __PRETTY_FUNCTION__ + (juce::String) position, true );
+    
+    debugLog( "newIndex" + (juce::String) newIndex);
+
+    debugLog( "directoryContentsList.getNumFiles()" + (juce::String) directoryContentsList.getNumFiles());
+    
     if(newIndex < directoryContentsList.getNumFiles()){
         formatManager.registerBasicFormats();
-        ScopedPointer<AudioFormatReader> reader( formatManager.createReaderFor(directoryContentsList.getFile(newIndex)));
-        
-        String fileName = directoryContentsList.getFile(newIndex).getFileName();
-        String filePath = samplesPath+fileName;
+        juce::ScopedPointer<juce::AudioFormatReader> reader( formatManager.createReaderFor(directoryContentsList.getFile(newIndex)));
+
+        juce::String fileName = directoryContentsList.getFile(newIndex).getFileName();
+        juce::String filePath = samplesPath+fileName;
+
+        debugLog(filePath);
         
         if (reader != nullptr )
         {
             this->deleteSound();
-            BigInteger notes;
+            juce::BigInteger notes;
             notes.setRange (note, 1, true);
             soundObj=nullptr;
-            soundObj = new SamplerSound(filePath, *reader, notes, note, 0.0, 0.1, 60.0);
-            processor->synth.addSound(soundObj);
+            soundObj = new juce::DrumSamplerSound(filePath, *reader, notes, note, 0.0, 0.1, 60.0);
+            processor->synth.addSound(soundObj); 
             soundLoaded = true;
             soundIndex = newIndex;
             this->setLabel(fileName,false);
@@ -132,32 +145,36 @@ bool DrumStripeHandler::hasThatSound(){
 //        }
 //    }
 //    return hasSound;
-    return FALSE;
+    return false;
 }
 
 void DrumStripeHandler::updateDirectoryContentList(){
-    String temp = "";
+    debugLog( __PRETTY_FUNCTION__ + (juce::String) position, true );
+
+    juce::String temp = "";
+
     directoryContentsList.setDirectory(temp, false, true);
-    thread.startThread(1);
+    thread.startThread();
     directoryContentsList.setDirectory(samplesPath, false, true);
-    thread.startThread(1);
+    thread.startThread();
 }
 
-void DrumStripeHandler::changeListenerCallback (ChangeBroadcaster* source)
+void DrumStripeHandler::changeListenerCallback (juce::ChangeBroadcaster* source)
 {
-    debugLog((String) __FUNCTION__ + (String) position, true );
+    debugLog(  __PRETTY_FUNCTION__ + (juce::String) position, true );
     if(source == &directoryContentsList and directoryContentsList.getDirectory().getFullPathName() !="" ){
 //        processor->info = processor->info + " changeListenerCallback ";
         this->updateSoundIndexFromSelection();
-        if(!directoryContentsList.isStillLoading()){ //soundLoaded != true and 
+        if(!directoryContentsList.isStillLoading()){ //soundLoaded != true and
             this->setSound(soundIndex);
         }
     }
 }
 
 void DrumStripeHandler::updateSoundIndexFromSelection(){
-    debugLog((String) __FUNCTION__ + (String) position );
-//    processor->info =  "Selection_: "+ selectionStr + "path_:"+samplesPath;
+    debugLog(  __PRETTY_FUNCTION__ + (juce::String)  position, true );
+    
+    processor->info =  "Selection_: "+ selectionStr + "path_:"+samplesPath;
     if(selectionStr != ""){
         for (int i = 0; i < directoryContentsList.getNumFiles(); ++i)
         {
@@ -168,7 +185,6 @@ void DrumStripeHandler::updateSoundIndexFromSelection(){
     }else{
         soundIndex = forcedSoundIndex;
         //forcedSoundIndex = 0;
-        
     }
 }
 
@@ -198,19 +214,18 @@ void DrumStripeHandler::deleteSound(){
 }
 
 void DrumStripeHandler::flashPlayButton(bool forceFlash){
-    
     if(forceFlash){
         playStarted = true;
     }
-    
+
     if(playStarted){
-        playButton.setColour(TextButton::buttonColourId, Colours::red);
+        playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
         playStarted = false;
     }else{
         if(canUpdateNote){
-            playButton.setColour(TextButton::buttonColourId, Colours::blueviolet);
+            playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::blueviolet);
         } else {
-            playButton.setColour(TextButton::buttonColourId, Colours::blanchedalmond);
+            playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::blanchedalmond);
         }
     }
 }
@@ -220,18 +235,19 @@ void DrumStripeHandler::timerCallback()
     flashPlayButton();
 }
 
-void DrumStripeHandler::setLabel(String message, bool append)
+void DrumStripeHandler::setLabel(juce::String message, bool append)
 {
     if(!append){
-        sampleLabel.setText(message, dontSendNotification);
+        sampleLabel.setText(message, juce::dontSendNotification);
     }else{
-        sampleLabel.setText(sampleLabel.getText() + message, dontSendNotification);
+        sampleLabel.setText(sampleLabel.getText() + message, juce::dontSendNotification);
     }
 }
 
-String DrumStripeHandler::getLabel()
+juce::String DrumStripeHandler::getLabel()
 {
-    return sampleLabel.getText();
+   // return std::to_string( sampleLabel.getText() );
+    return "";
 }
 
 void DrumStripeHandler::refreshView(){
@@ -269,13 +285,13 @@ void DrumStripeHandler::refreshView(){
 //    
 //}
 
-void DrumStripeHandler::setEditor(JuceDemoPluginAudioProcessorEditor* editor){
+void DrumStripeHandler::setEditor(GroovOliouAudioProcessorEditor* editor){
     mainEditor = editor;
     this->setGUIComponents();
 }
 
 void DrumStripeHandler::setGUIComponents(){
-    debugLog((String) __FUNCTION__  + (String) position, true );
+    debugLog( __PRETTY_FUNCTION__  + (juce::String) position, true );
     mainEditor->addAndMakeVisible(sampleLabel);
     this->initializeSlider(/*mainEditor,*/ &attackSlider, &attackLabel, 0, 1, 0.001,attack);
     this->initializeSlider(/*mainEditor,*/ &decaySlider, &decayLabel, 0, 1, 0.01,decay);
@@ -298,23 +314,23 @@ void DrumStripeHandler::setGUIComponents(){
     mainEditor->addAndMakeVisible(outputDropDown);
     outputDropDown.addListener (this);
 
-    noteLabel.setText("Note: "+(String)note, dontSendNotification);
-    mainEditor->addAndMakeVisible(noteLabel);
-    
-    playModeButton.setToggleState((bool) playMode , sendNotification);
-    this->togglePlayModeButton(playModeButton.getToggleState());
-    
-    reverseButton.setToggleState((bool) reverse , sendNotification);
-    this->toggleReverseButton(reverseButton.getToggleState());
-    
-    debugLog((String) "playMode: "  + (String) playMode);
-    
-    attackSlider.addMouseListener(this,false);
-    decaySlider.addMouseListener(this,false);
-    pitchSlider.addMouseListener(this,false);
-    balanceSlider.addMouseListener(this,false);
-    volumeSlider.addMouseListener(this,false);
-    
+//    noteLabel.setText("Note: "+(String)note, dontSendNotification);
+//    mainEditor->addAndMakeVisible(noteLabel);
+//
+//    playModeButton.setToggleState((bool) playMode , sendNotification);
+//    this->togglePlayModeButton(playModeButton.getToggleState());
+//
+//    reverseButton.setToggleState((bool) reverse , sendNotification);
+//    this->toggleReverseButton(reverseButton.getToggleState());
+//
+//    debugLog((String) "playMode: "  + (String) playMode);
+//
+//    attackSlider.addMouseListener(this,false);
+//    decaySlider.addMouseListener(this,false);
+//    pitchSlider.addMouseListener(this,false);
+//    balanceSlider.addMouseListener(this,false);
+//    volumeSlider.addMouseListener(this,false);
+//
     
     
 //    pitchSlider.addListener(this);
@@ -336,47 +352,49 @@ void DrumStripeHandler::setGUIComponents(){
 
 void DrumStripeHandler::initializeSlider(//JuceDemoPluginAudioProcessorEditor* mainEditor,
                                          juce::Slider *slider,
-                                        Label *label,
+                                         juce::Label *label,
                                         int min,
                                         int max,
                                         float step,
                                         float value)
 {
     mainEditor->addAndMakeVisible(slider);
-    slider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     //attackSlider.setRotaryParameters(Slider::RotaryHorizontalVerticalDrag, float_Pi, true)
-    slider->setTextBoxStyle(Slider::TextBoxBelow, true, 40, 20 );
+    slider->setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20 );
     slider->addListener(this);
     slider->setRange(min, max, step);
     slider->setValue( (double) value);
     label->attachToComponent (slider, false);
-    label->setFont (Font (11.0f));
+    label->setFont (juce::Font (11.0f));
 }
 
 
 void DrumStripeHandler::togglePlayModeButton(bool toggleState){
-    debugLog((String) __FUNCTION__  + (String) position, true );
-    debugLog((String) "togglePlayModeButton(): toggleState: " + (String)toggleState);
-    if(toggleState){ debugLog((String)"if");
+    debugLog( __PRETTY_FUNCTION__  + (juce::String) position, true );
+//    debugLog( "togglePlayModeButton(): toggleState: " ); // +  toggleState
+    if(toggleState){ debugLog( "if");
         playMode=1;
         playModeButton.setButtonText("One Shot");
-    }else{ debugLog((String)"else");
+    }else{ debugLog( "else");
         playMode=0;
         playModeButton.setButtonText("Note On/Off");
     }
 }
 
 void DrumStripeHandler::toggleReverseButton(bool toggleState){
-    debugLog((String) __FUNCTION__  + (String) position, true );
-    debugLog((String) "toggleReverseButton(): toggleState: " + (String)toggleState);
+//    debugLog((String) __PRETTY_FUNCTION__  + (String) position, true );
+//    debugLog((String) "toggleReverseButton(): toggleState: " + (String)toggleState);
     reverse = toggleState;
 }
 
-void DrumStripeHandler::buttonClicked(Button *button){
-    
+void DrumStripeHandler::buttonClicked(juce::Button *button){
+    debugLog( __PRETTY_FUNCTION__ + (juce::String) position, true );
+
     if(button == &playButton){
         processor->synth.noteOn(1, note, 1);
         flashPlayButton(true);
+        debugLog("after noteOn");
     }
     if(button == &nextSoundButton){
         this->loadNextSound();
@@ -391,9 +409,9 @@ void DrumStripeHandler::buttonClicked(Button *button){
         this->toggleReverseButton(reverseButton.getToggleState());
     }
     if(button == &selectFileButton){
-        FileChooser myChooser ("Please select an audio file...",  File(samplesPath),"*.wav,*.mp3");
+        juce::FileChooser myChooser = juce::FileChooser("Please select an audio file...",  juce::File(samplesPath),"*.wav,*.mp3");
         if(myChooser.browseForFileToOpen()){
-            File selection (myChooser.getResult());
+            juce::File selection (myChooser.getResult());
             selectionStr = selection.getFileNameWithoutExtension();//            processor->info = selection.getParentDirectory();
             soundIndex=0;
             samplesPath = selection.getParentDirectory().getFullPathName();
@@ -401,9 +419,9 @@ void DrumStripeHandler::buttonClicked(Button *button){
         }
     }
     if(button == &selectFileFolderButton){
-        FileChooser myChooser ("Please select the directory to use...",  File(samplesPath));
+        juce::FileChooser myChooser ("Please select the directory to use...",  juce::File(samplesPath));
         if(myChooser.browseForDirectory()){
-            File selection (myChooser.getResult());
+            juce::File selection (myChooser.getResult());
             soundIndex=0;
             samplesPath = selection.getFullPathName();
             DrumStripeHandler::updateDirectoryContentList();
@@ -412,9 +430,9 @@ void DrumStripeHandler::buttonClicked(Button *button){
 }
 
 
-void DrumStripeHandler::mouseDoubleClick(const MouseEvent& event){
-    debugLog((String) __FUNCTION__ );
-//    processor->info = " mouseDoubleClick: "+ event.originalComponent->getName();
+void DrumStripeHandler::mouseDoubleClick(const juce::MouseEvent& event){
+//    debugLog( __PRETTY_FUNCTION__ );
+    processor->info = " mouseDoubleClick: "+ event.originalComponent->getName();
     if(event.originalComponent->getName() == volumeName){
         volumeSlider.setValue(volumeDefValue);
     }
@@ -438,7 +456,7 @@ void DrumStripeHandler::mouseDoubleClick(const MouseEvent& event){
 
 void DrumStripeHandler::mouseEnter(const juce::MouseEvent &event){
     
-    debugLog((String) event.originalComponent->getName() );;
+    //debugLog( std::to_string(event.originalComponent->getName() ));;
     
     if(event.originalComponent->getName() == volumeName
         || event.originalComponent->getName() == balanceName
@@ -446,13 +464,14 @@ void DrumStripeHandler::mouseEnter(const juce::MouseEvent &event){
         || event.originalComponent->getName() == attackName
         || event.originalComponent->getName() == decayName){
         processor->info = sliderHelpMesg;
-        debugLog((String) event.originalComponent->getName() );
+//        debugLog( event.originalComponent->getName() );
     }
     if(event.originalComponent->getName() == playButtonName){
         processor->info = playButtonHelpMesg;
     }
 }
 
+//
 void DrumStripeHandler::mouseExit(const juce::MouseEvent &event){
     if(event.originalComponent->getName() == volumeName
         || event.originalComponent->getName() == balanceName
@@ -471,7 +490,7 @@ void DrumStripeHandler::updateNote(int newNote){
         //reset the sound with same soundIndex to pickup updated note.
         setSound(soundIndex);
         // Refresh Label
-        noteLabel.setText("Note: "+(String)note, dontSendNotification); 
+        noteLabel.setText("Note: "+(juce::String)note, juce::dontSendNotification);
         canUpdateNote = false;
     }
     if(note == newNote){
@@ -480,8 +499,9 @@ void DrumStripeHandler::updateNote(int newNote){
 }
 
 void DrumStripeHandler::mouseDown(const juce::MouseEvent & event){
-    debugLog((String) __FUNCTION__ );
-    ModifierKeys mKey = ModifierKeys::getCurrentModifiers();
+    debugLog( __PRETTY_FUNCTION__ + (juce::String) position, true );
+    
+    juce::ModifierKeys mKey = juce::ModifierKeys::getCurrentModifiers();
 
     if((event.originalComponent->getName() == volumeName
     || event.originalComponent->getName() == balanceName
@@ -489,8 +509,8 @@ void DrumStripeHandler::mouseDown(const juce::MouseEvent & event){
     || event.originalComponent->getName() == attackName
     || event.originalComponent->getName() == decayName) && mKey.isCtrlDown()){
         processor->resetSlidersColour();
-        processor->controlBindingMap[128]=(String)position+event.originalComponent->getName();
-        event.originalComponent->setColour(Slider::rotarySliderFillColourId, Colours::blueviolet);
+        processor->controlBindingMap[128]=(juce::String)position+event.originalComponent->getName();
+        event.originalComponent->setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blueviolet);
     }
     if(event.originalComponent->getName() == playButtonName && mKey.isCtrlDown()){
         canUpdateNote = true;
@@ -499,14 +519,14 @@ void DrumStripeHandler::mouseDown(const juce::MouseEvent & event){
 }
 
 void DrumStripeHandler::resetSlidersColour(){
-    volumeSlider.setColour(Slider::rotarySliderFillColourId, Colours::blue);
-    balanceSlider.setColour(Slider::rotarySliderFillColourId, Colours::blue);
-    pitchSlider.setColour(Slider::rotarySliderFillColourId, Colours::blue);
-    attackSlider.setColour(Slider::rotarySliderFillColourId, Colours::blue);
-    decaySlider.setColour(Slider::rotarySliderFillColourId, Colours::blue);
+    volumeSlider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
+    balanceSlider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
+    pitchSlider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
+    attackSlider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
+    decaySlider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
 }
 
-void DrumStripeHandler::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+void DrumStripeHandler::comboBoxChanged (juce::ComboBox* comboBoxThatHasChanged)
 {
     if (comboBoxThatHasChanged == &outputDropDown)
     {
@@ -520,33 +540,33 @@ void DrumStripeHandler::handleControlChange(int controllerNumber, int controller
         processor->controlBindingMap.erase(controllerNumber);
         processor->controlBindingMap[controllerNumber]= processor->controlBindingMap[128];
     }
-    
-    debugLog((juce::String)  "ControlChange:" + (juce::String) controllerNumber + " | "+ (juce::String) controllerValue );
 
-    
+//    debugLog((juce::String)  "ControlChange:" + (juce::String) controllerNumber + " | "+ (juce::String) controllerValue );
+
+
     processor->controlBindingMap[128]= "";
     for (auto it=processor->controlBindingMap.begin(); it!=processor->controlBindingMap.end(); ++it){
         if(it->first == controllerNumber){
-            if(it->second == (String)position+volumeName){
+            if(it->second == (juce::String)position+volumeName){
                 double newValue = 2 * (double) controllerValue/127.0;
-                volumeSlider.setValue( newValue, sendNotificationSync);
+                volumeSlider.setValue( newValue, juce::sendNotificationSync);
             }
-            if(it->second == (String)position+balanceName){
+            if(it->second == (juce::String)position+balanceName){
                 double newValue = 1.02 * (double) (controllerValue-63)/64.0;
 //                processor->info = "#potVal: " + (String) newValue;
-                balanceSlider.setValue( newValue, sendNotificationSync);
+                balanceSlider.setValue( newValue, juce::sendNotificationSync);
             }
-            if(it->second == (String)position+pitchName){
+            if(it->second == (juce::String)position+pitchName){
                 double newValue = 2 * (double) controllerValue/127.0;
-                pitchSlider.setValue( newValue, sendNotificationSync);
+                pitchSlider.setValue( newValue, juce::sendNotificationSync);
             }
-            if(it->second == (String)position+attackName){
+            if(it->second == (juce::String)position+attackName){
                 double newValue = (double) controllerValue/127.0;
-                attackSlider.setValue( newValue, sendNotificationSync);
+                attackSlider.setValue( newValue, juce::sendNotificationSync);
             }
-            if(it->second == (String)position+decayName){
+            if(it->second == (juce::String)position+decayName){
                 double newValue = (double) controllerValue/127.0;
-                decaySlider.setValue( newValue, sendNotificationSync);
+                decaySlider.setValue( newValue, juce::sendNotificationSync);
             }
             processor->resetSlidersColour();
         }
@@ -586,7 +606,7 @@ bool DrumStripeHandler::keyStateChanged(bool isKeyDown, juce::Component *origina
 //    
 //}
 //
-void DrumStripeHandler::sliderValueChanged (Slider* slider)
+void DrumStripeHandler::sliderValueChanged (juce::Slider* slider)
 {
     if(slider == &balanceSlider){
         balance = slider->getValue();
