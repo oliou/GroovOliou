@@ -18,5 +18,7 @@ It also offers the following features:
 - Pitch
 - Balance
 - Gain
-- Multiple outputs 
+- Multiple outputs
+- Assignable knobs with control changes (ctrl + click on target knob)
+- Assignable notes (ctrl + click on target play pad)
 
