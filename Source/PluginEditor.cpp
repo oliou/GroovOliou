@@ -20,6 +20,7 @@ GroovOliouAudioProcessorEditor::GroovOliouAudioProcessorEditor (GroovOliouAudioP
     : AudioProcessorEditor (&p),
     midiKeyboard (p.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioProcessor (p),
+    versionLabel("VersionLabel","v3.0 Alpha"),
     infoLabel (),
     gainLabel ("", "Throughput level:"),
     delayLabel ("", "Delay:"),
@@ -73,6 +74,10 @@ GroovOliouAudioProcessorEditor::GroovOliouAudioProcessorEditor (GroovOliouAudioP
     // add the midi keyboard component..
     addAndMakeVisible (midiKeyboard);
 
+    // add a label that will version
+    addAndMakeVisible (versionLabel);
+    versionLabel.setColour (juce::Label::textColourId, juce::Colours::orange);
+    
     // add a label that will display the current timecode and status..
     addAndMakeVisible (infoLabel);
     infoLabel.setColour (juce::Label::textColourId, juce::Colours::orange);
@@ -112,14 +117,14 @@ void GroovOliouAudioProcessorEditor::paint (juce::Graphics& g)
   //  g.fillAll();
     
     
-    juce::DrawableRectangle rect ;
-    rect.setBounds(10,10,45,45);
-    rect.setRectangle (juce::Rectangle<float> (0, 0, 50.0f, 50.0f));
-    rect.setFill (juce::Colours::red);
-    rect.setStrokeFill (juce::Colours::green);
-    rect.setStrokeThickness (3.0f);
-//
-    addAndMakeVisible(rect);
+//    juce::DrawableRectangle rect ;
+//    rect.setBounds(10,10,45,45);
+//    rect.setRectangle (juce::Rectangle<float> (0, 0, 50.0f, 50.0f));
+//    rect.setFill (juce::Colours::red);
+//    rect.setStrokeFill (juce::Colours::green);
+//    rect.setStrokeThickness (3.0f);
+////
+//    addAndMakeVisible(rect);
     
     g.fillAll();
     
@@ -148,7 +153,9 @@ void GroovOliouAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    infoLabel.setBounds (10, 10, 900, 25);
+    infoLabel.setBounds (10, 10, 840, 25);
+    
+    versionLabel.setBounds(840, 3, 60, 20);
     
     getProcessor().lastUIWidth = getWidth();
     getProcessor().lastUIHeight = getHeight();

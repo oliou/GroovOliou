@@ -37,7 +37,7 @@ public:
     void sliderDragEnded    (juce::Slider*) override;
     
     juce::MidiKeyboardComponent midiKeyboard;
-    juce::Label infoLabel, gainLabel, delayLabel, balanceLabel, rmsR_Label,rmsL_Label ;
+    juce::Label versionLabel, infoLabel, gainLabel, delayLabel, balanceLabel, rmsR_Label,rmsL_Label ;
     juce::Slider gainSlider ,balanceSlider, delaySlider;
     
     void setDrumStripeEditor(); // set editor into drumstripes
