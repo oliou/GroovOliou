@@ -75,7 +75,7 @@ GroovOliouAudioProcessorEditor::GroovOliouAudioProcessorEditor (GroovOliouAudioP
 
     // add a label that will display the current timecode and status..
     addAndMakeVisible (infoLabel);
-    infoLabel.setColour (juce::Label::textColourId, juce::Colours::blue);
+    infoLabel.setColour (juce::Label::textColourId, juce::Colours::orange);
     
     // add a label that will display the current timecode and status..
     addAndMakeVisible (rmsR_Label);
@@ -109,7 +109,20 @@ void GroovOliouAudioProcessorEditor::paint (juce::Graphics& g)
     
     g.setGradientFill (juce::ColourGradient (juce::Colours::darkgrey, 0, 0,
                                        juce::Colours::darkgrey, 0, (float) getHeight(), false));
+  //  g.fillAll();
+    
+    
+    juce::DrawableRectangle rect ;
+    rect.setBounds(10,10,45,45);
+    rect.setRectangle (juce::Rectangle<float> (0, 0, 50.0f, 50.0f));
+    rect.setFill (juce::Colours::red);
+    rect.setStrokeFill (juce::Colours::green);
+    rect.setStrokeThickness (3.0f);
+//
+    addAndMakeVisible(rect);
+    
     g.fillAll();
+    
    // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 //    g.setColour (juce::Colours::white);

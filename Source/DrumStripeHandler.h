@@ -99,9 +99,9 @@ public:
 //    void sliderDragStarted  (Slider*) override;
 //    void sliderDragEnded    (Slider*) override;
     
-    int width = 100;
+    int width = 110;
     int position = 0;
-    int sliderHeight = 80;
+    int sliderHeight = 93;
     int note;
     
     bool canUpdateNote = false;
@@ -120,33 +120,46 @@ public:
     bool reverse = false;
     
     const juce::String playButtonName="playButton";
-    const juce::String playButtonHelpMesg="Assigne Note: Ctrl-click then keyboard note.";
+    const juce::String playButtonHelpMesg="Assigne Note: Ctrl-click then keyboard note. You can assign several samples to the same note.";
     
-    const juce::String sliderHelpMesg="Assign Controller: Ctrl-click then move controller. Double click to reset value.";
+    const juce::String sliderHelpMesg="Assign Controller: Ctrl-click then move controller. Double click to reset value. ";
+    const juce::String sliderReleaseHelpMesg= sliderHelpMesg + " Release affects the sound only in one-shot mode.";
+    
+    const juce::String playModeHelpMesg= "One-shot = Sample plays until defined release value | Note On/Off = Sample plays as long the key is pressed ";
+    const juce::String reverseHelpMesg= "Reverse = Sample plays from the end. Use the \"Trim Start\" knob to adjust when playback starts.";
+
+    
+    const juce::String nextSoundHelpMesg="Click to load the next sample in the selected folder.";
+    const juce::String prevSoundHelpMesg="Click to load the previous sample in the selected folder.";
+
 
     const juce::String volumeName="Gain";
     const juce::String balanceName="Balance";
     const juce::String pitchName="Pitch";
-    const juce::String attackName="Attack";
-    const juce::String decayName="Decay";
+    const juce::String attackName="Trim Start";
+    const juce::String releaseName="Release";
+    const juce::String nextSoundName=" > ";
+    const juce::String prevSoundName=" < ";
+    const juce::String playModeName="PlayMode";
+    const juce::String reverseName="Reverse";
     
     const int volumeDefValue=1;
     const int balanceDefValue=0;
     const int pitchDefValue=1;
     const int attackDefValue=0;
-    const int decayDefValue=0;
+    const int releaseDefValue=1;
     
     float volume = volumeDefValue;
     float balance = balanceDefValue;
     float pitch = pitchDefValue;
     float attack = attackDefValue;
-    float decay = decayDefValue;
+    float release = releaseDefValue;
     
     juce::String samplesPath ;
     
     juce::Label   sampleLabel,
             attackLabel,
-            decayLabel,
+            releaseLabel,
             pitchLabel,
             volumeLabel,
             balanceLabel,
@@ -154,7 +167,7 @@ public:
             noteLabel;
     
     juce::Slider  attackSlider,
-            decaySlider,
+            releaseSlider,
             pitchSlider,
             volumeSlider,
             balanceSlider;

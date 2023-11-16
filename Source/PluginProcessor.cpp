@@ -108,9 +108,9 @@ GroovOliouAudioProcessor::GroovOliouAudioProcessor()
     
     // Initialise the synth...
     int startNote= 35;
-    for (int i = 16; --i >= 0;){
+    for (int i = 32; --i >= 0;){
 //        synth.addVoice (new juce::SamplerVoice());
-        synth.addVoice (new juce::DrumSamplerVoice());
+        synth.addVoice (new juce::DrumSamplerVoice(this));
         // These voices will play our custom sine-wave sounds..
     }
     for (int i = 0;++i < 9;){
@@ -416,7 +416,7 @@ void GroovOliouAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         xml.setAttribute (objectName+"balance", drumStripe->balance);
         xml.setAttribute (objectName+"pitch", drumStripe->pitch);
         xml.setAttribute (objectName+"attack", drumStripe->attack);
-        xml.setAttribute (objectName+"decay", drumStripe->decay);
+        xml.setAttribute (objectName+"release", drumStripe->release);
         xml.setAttribute (objectName+"outputSelected", drumStripe->outputSelected);
     }
     
@@ -467,7 +467,7 @@ void GroovOliouAudioProcessor::setStateInformation (const void* data, int sizeIn
                 drumStripe->balance = xmlState->getDoubleAttribute(objectName+"balance",drumStripe->balance);
                 drumStripe->pitch = xmlState->getDoubleAttribute(objectName+"pitch",drumStripe->pitch);
                 drumStripe->attack = xmlState->getDoubleAttribute(objectName+"attack",drumStripe->attack);
-                drumStripe->decay = xmlState->getDoubleAttribute(objectName+"decay",drumStripe->decay);
+                drumStripe->release = xmlState->getDoubleAttribute(objectName+"release",drumStripe->release);
                 drumStripe->outputSelected = xmlState->getIntAttribute(objectName+"outputSelected",drumStripe->outputSelected);
                 //Refresh stripe with loaded params
                 drumStripe->outputDropDown.setSelectedId(drumStripe->outputSelected);

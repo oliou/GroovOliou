@@ -28,6 +28,8 @@
 #include <math.h>
 
 #include "utils.h"
+#include "PluginProcessor.h"
+
 
 namespace juce
 {
@@ -64,7 +66,7 @@ namespace juce
                                             with its natural rate. All other notes will be pitched
                                             up or down relative to this one
             @param attackTimeSecs   the attack (fade-in) time, in seconds
-            @param releaseTimeSecs  the decay (fade-out) time, in seconds
+            @param releaseTimeSecs  the release (fade-out) time, in seconds
             @param maxSampleLengthSeconds   a maximum length of audio to read from the audio
                                             source, in seconds
         */
@@ -130,7 +132,7 @@ namespace juce
     public:
         //==============================================================================
         /** Creates a SamplerVoice. */
-        DrumSamplerVoice();
+        DrumSamplerVoice(GroovOliouAudioProcessor*);
 
         /** Destructor. */
         ~DrumSamplerVoice() override;
@@ -146,12 +148,24 @@ namespace juce
 
         void renderNextBlock (AudioBuffer<float>&, int startSample, int numSamples) override;
         using SynthesiserVoice::renderNextBlock;
+        
+        GroovOliouAudioProcessor *processor;
+        DrumStripeHandler *currDrumStripe=nullptr;
+
+        
+//        float attackRatio=0.0;
+//        float releaseRatio=0.0;
+//        double sourceSampleRate = 0;
+//        float attackReleaseLevel = 0, attackDelta = 0, releaseDelta = 0;
+//        bool isInAttack = false, isInRelease = false;
+//        int playMode=0; //0=noteOnOff 1=oneshoot
 
     private:
         //==============================================================================
         double pitchRatio = 0;
         double sourceSamplePosition = 0;
-        float lgain = 0, rgain = 0;
+        float velocity=0;
+//        float lgain = 0, rgain = 0;
 
         ADSR adsr;
 

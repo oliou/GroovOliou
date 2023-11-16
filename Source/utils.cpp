@@ -19,20 +19,22 @@ const bool debugMode = true;
 
 void debugLog(juce::String debugTxt, bool separator){
 
-    juce::String debugTxt2 = "\n ----------------------" + debugTxt +"--------------------------- \n";
+    juce::String WithSeparator = "\n ----------------------" + debugTxt +"--------------------------- \n";
     
-    debugLog(debugTxt2);
+    debugLog(WithSeparator);
 }
 
 
 void debugLog(juce::String debugTxt){
     //creating log file
-    juce::String timeStamp = date::format("%F %T", std::chrono::system_clock::now());
-    
-    debugTxt = timeStamp +": "+debugTxt;
+    #if DEBUG
+        juce::String timeStamp = date::format("%F %T", std::chrono::system_clock::now());
+        
+        debugTxt = timeStamp +": "+debugTxt;
 
-    ofstream logfile;
-    logfile.open ("/Users/oliou/Desktop/debug.txt", std::ios::app);
-    logfile << debugTxt << "\n";
-    logfile.close();
+        ofstream logfile;
+        logfile.open ("/Users/oliou/Desktop/debug.txt", std::ios::app);
+        logfile << debugTxt << "\n";
+        logfile.close();
+    #endif
 }

@@ -25,6 +25,8 @@
 
 #include "DrumSampler.h"
 #include "utils.h"
+#include "PluginProcessor.h"
+
 
 namespace juce
 {
@@ -70,7 +72,15 @@ namespace juce
     }
 
     //==============================================================================
-    DrumSamplerVoice::DrumSamplerVoice() {}
+    DrumSamplerVoice::DrumSamplerVoice(GroovOliouAudioProcessor* p):
+        processor(p)
+//        pitchRatio (0.0),
+//        sourceSamplePosition (0.0),
+//        lgain (0.0f), rgain (0.0f),
+//        attackReleaseLevel (0), attackDelta (0), releaseDelta (0),
+//        isInAttack (false), isInRelease (false)
+    {}
+
     DrumSamplerVoice::~DrumSamplerVoice() {}
 
     bool DrumSamplerVoice::canPlaySound (SynthesiserSound* sound)
@@ -78,24 +88,34 @@ namespace juce
         return dynamic_cast<const DrumSamplerSound*> (sound) != nullptr;
     }
 
-    void DrumSamplerVoice::startNote (int midiNoteNumber, float velocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/)
+    void DrumSamplerVoice::startNote (int midiNoteNumber, float midiNoteVelocity, SynthesiserSound* s, int /*currentPitchWheelPosition*/)
     {
-        debugLog( __PRETTY_FUNCTION__, true );
+        debugLog( (juce::String) __PRETTY_FUNCTION__, true );
         
+        // update
         if (auto* sound = dynamic_cast<const DrumSamplerSound*> (s))
         {
             pitchRatio = std::pow (2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
                             * sound->sourceSampleRate / getSampleRate();
-
+            
+//            isInAttack = (sound->attackSamples > 0);
+//            isInRelease = false;
+            
+            debugLog("midiNoteNumber: " + (juce::String) midiNoteNumber );
+            debugLog("Velocity: " + (juce::String) velocity );
+            
             sourceSamplePosition = 0.0;
-            lgain = velocity;
-            rgain = velocity;
+            velocity = midiNoteVelocity;
+//            lgain = velocity;
+//            rgain = velocity;
 
             adsr.setSampleRate (sound->sourceSampleRate);
             adsr.setParameters (sound->params);
+//            adsr.setParameters(juce::ADSR::Parameters(0.0f, 1.0f, 1.0f, 5.0f));
 
+            debugLog( "ADSR START" );
             adsr.noteOn();
-            debugLog( "sound CASTED" );
+            debugLog( "ADSR END" );
 
         }
         else
@@ -124,8 +144,92 @@ namespace juce
     //==============================================================================
     void DrumSamplerVoice::renderNextBlock (AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
     {
+//        debugLog((String) __FUNCTION__  , true );
+        
+        int lIdx = 0;
+        int rIdx = 1;
+//        float l_gain=lgain;
+//        float r_gain=rgain;
+        bool reverse = false;
+        float startPos = 0;
+        
+        float lFinalGain = 0;
+        float rFinalGain = 0;
+        
+        for (auto & drumStripe : processor->drumStripes) {
+            if(getCurrentlyPlayingNote() == drumStripe->note){
+//                debugLog("Position: "+ (String)  drumStripe->position );
+                reverse = drumStripe->reverse;
+                startPos = drumStripe->attack;
+                                
+                processor->info = drumStripe->samplesPath + drumStripe->sampleLabel.getText();
+                
+                //attackRatio+= (float) (drumStripe->attack/10);
+                float attackRatio = drumStripe->attack;
+    //            1-(attackRatio+drumStripe->attack) * drumStripe->attack ;
+//                if(attackRatio>1){
+//                    attackRatio = 1;
+//                }
+                float releaseRatio = drumStripe->release;
+                if(drumStripe->playMode == 0){
+                    float releaseRatio = 0;
+                }
+                
+                adsr.setParameters(juce::ADSR::Parameters(
+                                                          15,
+                                                          adsr.getParameters().decay,
+                                                          adsr.getParameters().sustain,
+                                                          releaseRatio));
+                
+//                float temp = 1+attackRatio;
+                float gain = drumStripe->volume ;
+                float balance = drumStripe->balance;
+                
+                lFinalGain = gain*velocity;
+                rFinalGain = gain*velocity;
+                
+                if(balance>0){
+                    lFinalGain= (1 - balance) *lFinalGain;
+                }
+                if(balance<0){
+                    rFinalGain= (1 - std::abs(balance)) *rFinalGain;
+                }
+
+                pitchRatio = drumStripe->pitch;// * sound->sourceSampleRate / getSampleRate ();
+                
+//                attackRatio = drumStripe->attack;
+                int playMode = drumStripe->playMode;
+                
+                lIdx = drumStripe->outputSelected-1;
+                rIdx = drumStripe->outputSelected;
+                
+                currDrumStripe = drumStripe;
+                
+                // Set Envelope
+                break;
+            
+            }
+        }
+        
         if (auto* playingSound = static_cast<DrumSamplerSound*> (getCurrentlyPlayingSound().get()))
         {
+//            processor->info = " playingSound->length: " + (String) playingSound->length;
+            
+            //Reverse
+            if(sourceSamplePosition == 0){
+                if(!reverse){
+                    sourceSamplePosition = playingSound->length * startPos;
+                }else{
+                    sourceSamplePosition = playingSound->length - (playingSound->length * startPos);
+                }
+                debugLog((String) __FUNCTION__  , true );
+                debugLog( "START"  );
+
+                debugLog("sourceSamplePosition: "+ (String) sourceSamplePosition);
+            
+            }
+            
+            
             auto& data = *playingSound->data;
             const float* const inL = data.getReadPointer (0);
             const float* const inR = data.getNumChannels() > 1 ? data.getReadPointer (1) : nullptr;
@@ -141,14 +245,18 @@ namespace juce
 
                 // just using a very simple linear interpolation here..
                 float l = (inL[pos] * invAlpha + inL[pos + 1] * alpha);
-                float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha)
-                                           : l;
+                float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha) : l;
+//                float r = 0.05;
 
+                
+//                adsr.setParameters(juce::ADSR::Parameters(3.0f, 1.0f, 1.0f, 0.0f));
                 auto envelopeValue = adsr.getNextSample();
 
-                l *= lgain * envelopeValue;
-                r *= rgain * envelopeValue;
+                l *= lFinalGain * envelopeValue;
+                r *= rFinalGain * envelopeValue;
 
+//                debugLog("l: " + (String) l  + " | "  "r: " + (String) r  );
+                
                 if (outR != nullptr)
                 {
                     *outL++ += l;
@@ -159,12 +267,29 @@ namespace juce
                     *outL++ += (l + r) * 0.5f;
                 }
 
-                sourceSamplePosition += pitchRatio;
-
-                if (sourceSamplePosition > playingSound->length)
+                if(!reverse){
+                    sourceSamplePosition += pitchRatio * playingSound->sourceSampleRate / getSampleRate ();
+                }else{
+                    sourceSamplePosition -= pitchRatio * playingSound->sourceSampleRate / getSampleRate ();
+                }
+                
+                
+                if (sourceSamplePosition > playingSound->length or sourceSamplePosition < 0)
                 {
+                    debugLog((String) __FUNCTION__  , true );
+                    
+                    debugLog("pitchRatio: "+ (String) pitchRatio);
+                    debugLog("playingSound->sourceSampleRate: " + (String) playingSound->sourceSampleRate);
+                    debugLog("pitchRatio: "+ (String) getSampleRate());
+                    debugLog("playingSound->length: "+ (String) playingSound->length );
+                    debugLog("sourceSamplePosition: "+ (String) sourceSamplePosition);
+                    debugLog("numSamples: "+ (String) numSamples);
+                    debugLog( "END"  );
+                    
                     stopNote (0.0f, false);
                     break;
+                }else{
+                    
                 }
             }
         }

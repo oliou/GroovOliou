@@ -4,7 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginCharacteristicsValue="pluginAAXDisableMultiMono,pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               pluginFormats="buildAU,buildVST3" pluginChannelConfigs="{0,2}"
-              defines="JUCE_MODAL_LOOPS_PERMITTED=1">
+              defines="JUCE_MODAL_LOOPS_PERMITTED=1" companyName="BimbolSoft"
+              companyWebsite="https://github.com/oliou">
   <MAINGROUP id="tG6IOS" name="GroovOliou3">
     <GROUP id="{682D9FBF-8015-8464-191B-AFB1B015C501}" name="Source">
       <FILE id="YhhrZw" name="utils.h" compile="0" resource="0" file="Source/utils.h"/>
@@ -45,7 +46,7 @@
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="GroovOliou3"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="NewProject"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="GroovOliou3"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
